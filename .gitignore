@@ -1,0 +1,19 @@
+# Python virtual environment
+.venv/
+
+# Python-generated files
+__pycache__/
+*.py[cod]
+*.pyd
+
+# Secrets and local configuration
+.env
+.env.*
+
+# Keep an example configuration file, if we add one later
+!.env.example
+
+# Development tools and logs
+.vscode/
+.pytest_cache/
+*.log
