@@ -1,88 +1,47 @@
-
 {
   "match_id": "pitchiq-demo-001",
   "home_team": "Harbour FC",
   "away_team": "Riverside United",
   "events": [
-    {
-      "id": 1,
-      "minute": 12,
-      "team": "Harbour FC",
-      "player": "Player H1",
-      "type": "pass",
-      "outcome": "complete"
-    },
-    {
-      "id": 2,
-      "minute": 12,
-      "team": "Harbour FC",
-      "player": "Player H2",
-      "type": "pass",
-      "outcome": "complete"
-    },
-    {
-      "id": 3,
-      "minute": 13,
-      "team": "Harbour FC",
-      "player": "Player H3",
-      "type": "shot",
-      "outcome": "saved"
-    },
-    {
-      "id": 4,
-      "minute": 18,
-      "team": "Riverside United",
-      "player": "Player R1",
-      "type": "pass",
-      "outcome": "complete"
-    },
-    {
-      "id": 5,
-      "minute": 18,
-      "team": "Riverside United",
-      "player": "Player R2",
-      "type": "shot",
-      "outcome": "goal"
-    },
-    {
-      "id": 6,
-      "minute": 29,
-      "team": "Harbour FC",
-      "player": "Player H4",
-      "type": "tackle",
-      "outcome": "won"
-    },
-    {
-      "id": 7,
-      "minute": 41,
-      "team": "Harbour FC",
-      "player": "Player H5",
-      "type": "pass",
-      "outcome": "complete"
-    },
-    {
-      "id": 8,
-      "minute": 41,
-      "team": "Harbour FC",
-      "player": "Player H6",
-      "type": "pass",
-      "outcome": "complete"
-    },
-    {
-      "id": 9,
-      "minute": 42,
-      "team": "Harbour FC",
-      "player": "Player H7",
-      "type": "shot",
-      "outcome": "goal"
-    },
-    {
-      "id": 10,
-      "minute": 44,
-      "team": "Riverside United",
-      "player": "Player R3",
-      "type": "pass",
-      "outcome": "incomplete"
-    }
+    {"id": 11, "minute": 2, "period": 1, "team": "Harbour FC", "player": "Player H8", "type": "recovery", "outcome": "secured", "possession_id": "H-P01", "phase": "recovery", "pressure": "low", "location": {"x": 25, "y": 35}, "end_location": null},
+    {"id": 12, "minute": 4, "period": 1, "team": "Harbour FC", "player": "Player H9", "type": "pass", "outcome": "complete", "possession_id": "H-P01", "phase": "build_up", "pressure": "low", "location": {"x": 24, "y": 33}, "end_location": {"x": 35, "y": 35}},
+    {"id": 13, "minute": 5, "period": 1, "team": "Harbour FC", "player": "Player H10", "type": "carry", "outcome": "successful", "possession_id": "H-P01", "phase": "build_up", "pressure": "medium", "location": {"x": 35, "y": 35}, "end_location": {"x": 42, "y": 31}},
+    {"id": 14, "minute": 7, "period": 1, "team": "Harbour FC", "player": "Player H11", "type": "pass", "outcome": "complete", "possession_id": "H-P01", "phase": "build_up", "pressure": "medium", "location": {"x": 42, "y": 31}, "end_location": {"x": 52, "y": 27}},
+    {"id": 15, "minute": 8, "period": 1, "team": "Harbour FC", "player": "Player H12", "type": "carry", "outcome": "successful", "possession_id": "H-P01", "phase": "settled_attack", "pressure": "low", "location": {"x": 52, "y": 27}, "end_location": {"x": 60, "y": 24}},
+    {"id": 16, "minute": 10, "period": 1, "team": "Riverside United", "player": "Player R4", "type": "pass", "outcome": "complete", "possession_id": "R-P02", "phase": "build_up", "pressure": "low", "location": {"x": 24, "y": 29}, "end_location": {"x": 39, "y": 31}},
+    {"id": 17, "minute": 11, "period": 1, "team": "Harbour FC", "player": "Player H4", "type": "pressure", "outcome": "applied", "possession_id": "R-P02", "phase": "pressing", "pressure": "high", "location": {"x": 44, "y": 33}, "end_location": null},
+    {"id": 1, "minute": 12, "period": 1, "team": "Harbour FC", "player": "Player H1", "type": "pass", "outcome": "complete", "possession_id": "H-P05", "phase": "build_up", "pressure": "medium", "location": {"x": 32, "y": 34}, "end_location": {"x": 46, "y": 31}},
+    {"id": 2, "minute": 12, "period": 1, "team": "Harbour FC", "player": "Player H2", "type": "pass", "outcome": "complete", "possession_id": "H-P05", "phase": "build_up", "pressure": "medium", "location": {"x": 46, "y": 31}, "end_location": {"x": 61, "y": 28}},
+    {"id": 3, "minute": 13, "period": 1, "team": "Harbour FC", "player": "Player H3", "type": "shot", "outcome": "saved", "possession_id": "H-P05", "phase": "settled_attack", "pressure": "high", "location": {"x": 83, "y": 28}, "end_location": {"x": 104, "y": 34}},
+    {"id": 18, "minute": 15, "period": 1, "team": "Riverside United", "player": "Player R5", "type": "recovery", "outcome": "secured", "possession_id": "R-P04", "phase": "recovery", "pressure": "low", "location": {"x": 38, "y": 40}, "end_location": null},
+    {"id": 19, "minute": 16, "period": 1, "team": "Riverside United", "player": "Player R6", "type": "carry", "outcome": "successful", "possession_id": "R-P04", "phase": "transition", "pressure": "medium", "location": {"x": 38, "y": 40}, "end_location": {"x": 51, "y": 43}},
+    {"id": 20, "minute": 17, "period": 1, "team": "Harbour FC", "player": "Player H4", "type": "clearance", "outcome": "cleared", "possession_id": "H-P06", "phase": "defensive_phase", "pressure": "high", "location": {"x": 70, "y": 39}, "end_location": {"x": 52, "y": 35}},
+    {"id": 4, "minute": 18, "period": 1, "team": "Riverside United", "player": "Player R1", "type": "pass", "outcome": "complete", "possession_id": "R-P07", "phase": "transition", "pressure": "low", "location": {"x": 29, "y": 32}, "end_location": {"x": 49, "y": 36}},
+    {"id": 5, "minute": 18, "period": 1, "team": "Riverside United", "player": "Player R2", "type": "shot", "outcome": "goal", "possession_id": "R-P07", "phase": "settled_attack", "pressure": "medium", "location": {"x": 90, "y": 36}, "end_location": {"x": 104, "y": 34}},
+    {"id": 21, "minute": 20, "period": 1, "team": "Harbour FC", "player": "Player H8", "type": "carry", "outcome": "successful", "possession_id": "H-P08", "phase": "transition", "pressure": "low", "location": {"x": 41, "y": 35}, "end_location": {"x": 47, "y": 29}},
+    {"id": 22, "minute": 22, "period": 1, "team": "Riverside United", "player": "Player R7", "type": "interception", "outcome": "won", "possession_id": "R-P08", "phase": "defensive_phase", "pressure": "medium", "location": {"x": 54, "y": 28}, "end_location": null},
+    {"id": 23, "minute": 24, "period": 1, "team": "Harbour FC", "player": "Player H2", "type": "pass", "outcome": "complete", "possession_id": "H-P09", "phase": "build_up", "pressure": "medium", "location": {"x": 49, "y": 42}, "end_location": {"x": 62, "y": 45}},
+    {"id": 24, "minute": 25, "period": 1, "team": "Harbour FC", "player": "Player H3", "type": "carry", "outcome": "successful", "possession_id": "H-P09", "phase": "build_up", "pressure": "high", "location": {"x": 62, "y": 45}, "end_location": {"x": 69, "y": 39}},
+    {"id": 25, "minute": 27, "period": 1, "team": "Riverside United", "player": "Player R8", "type": "recovery", "outcome": "secured", "possession_id": "R-P09", "phase": "recovery", "pressure": "low", "location": {"x": 64, "y": 33}, "end_location": null},
+    {"id": 6, "minute": 29, "period": 1, "team": "Harbour FC", "player": "Player H4", "type": "tackle", "outcome": "won", "possession_id": "H-P10", "phase": "defensive_phase", "pressure": "high", "location": {"x": 51, "y": 34}, "end_location": null},
+    {"id": 26, "minute": 31, "period": 1, "team": "Riverside United", "player": "Player R9", "type": "pass", "outcome": "complete", "possession_id": "R-P10", "phase": "build_up", "pressure": "medium", "location": {"x": 38, "y": 44}, "end_location": {"x": 49, "y": 39}},
+    {"id": 27, "minute": 32, "period": 1, "team": "Riverside United", "player": "Player R10", "type": "carry", "outcome": "successful", "possession_id": "R-P10", "phase": "build_up", "pressure": "medium", "location": {"x": 49, "y": 39}, "end_location": {"x": 56, "y": 37}},
+    {"id": 28, "minute": 35, "period": 1, "team": "Harbour FC", "player": "Player H6", "type": "interception", "outcome": "won", "possession_id": "H-P11", "phase": "defensive_phase", "pressure": "high", "location": {"x": 58, "y": 37}, "end_location": null},
+    {"id": 29, "minute": 37, "period": 1, "team": "Harbour FC", "player": "Player H9", "type": "carry", "outcome": "successful", "possession_id": "H-P12", "phase": "transition", "pressure": "low", "location": {"x": 55, "y": 35}, "end_location": {"x": 63, "y": 31}},
+    {"id": 30, "minute": 39, "period": 1, "team": "Riverside United", "player": "Player R11", "type": "pressure", "outcome": "applied", "possession_id": "H-P12", "phase": "pressing", "pressure": "high", "location": {"x": 67, "y": 29}, "end_location": null},
+    {"id": 7, "minute": 41, "period": 1, "team": "Harbour FC", "player": "Player H5", "type": "pass", "outcome": "complete", "possession_id": "H-P14", "phase": "build_up", "pressure": "low", "location": {"x": 56, "y": 47}, "end_location": {"x": 68, "y": 41}},
+    {"id": 8, "minute": 41, "period": 1, "team": "Harbour FC", "player": "Player H6", "type": "pass", "outcome": "complete", "possession_id": "H-P14", "phase": "build_up", "pressure": "medium", "location": {"x": 68, "y": 41}, "end_location": {"x": 84, "y": 34}},
+    {"id": 9, "minute": 42, "period": 1, "team": "Harbour FC", "player": "Player H7", "type": "shot", "outcome": "goal", "possession_id": "H-P14", "phase": "settled_attack", "pressure": "high", "location": {"x": 91, "y": 34}, "end_location": {"x": 104, "y": 33}},
+    {"id": 10, "minute": 44, "period": 1, "team": "Riverside United", "player": "Player R3", "type": "pass", "outcome": "incomplete", "possession_id": "R-P12", "phase": "transition", "pressure": "high", "location": {"x": 41, "y": 22}, "end_location": {"x": 59, "y": 18}},
+    {"id": 31, "minute": 49, "period": 2, "team": "Riverside United", "player": "Player R12", "type": "recovery", "outcome": "secured", "possession_id": "R-P15", "phase": "recovery", "pressure": "low", "location": {"x": 31, "y": 34}, "end_location": null},
+    {"id": 32, "minute": 52, "period": 2, "team": "Riverside United", "player": "Player R13", "type": "carry", "outcome": "successful", "possession_id": "R-P15", "phase": "transition", "pressure": "medium", "location": {"x": 31, "y": 34}, "end_location": {"x": 44, "y": 39}},
+    {"id": 33, "minute": 58, "period": 2, "team": "Harbour FC", "player": "Player H10", "type": "pass", "outcome": "complete", "possession_id": "H-P17", "phase": "build_up", "pressure": "low", "location": {"x": 48, "y": 30}, "end_location": {"x": 62, "y": 26}},
+    {"id": 34, "minute": 61, "period": 2, "team": "Harbour FC", "player": "Player H11", "type": "carry", "outcome": "successful", "possession_id": "H-P17", "phase": "build_up", "pressure": "medium", "location": {"x": 62, "y": 26}, "end_location": {"x": 71, "y": 22}},
+    {"id": 35, "minute": 67, "period": 2, "team": "Riverside United", "player": "Player R2", "type": "shot", "outcome": "off_target", "possession_id": "R-P18", "phase": "settled_attack", "pressure": "high", "location": {"x": 81, "y": 27}, "end_location": {"x": 103, "y": 24}},
+    {"id": 36, "minute": 73, "period": 2, "team": "Harbour FC", "player": "Player H12", "type": "pressure", "outcome": "applied", "possession_id": "R-P20", "phase": "pressing", "pressure": "high", "location": {"x": 70, "y": 33}, "end_location": null},
+    {"id": 37, "minute": 76, "period": 2, "team": "Harbour FC", "player": "Player H7", "type": "shot", "outcome": "saved", "possession_id": "H-P21", "phase": "settled_attack", "pressure": "high", "location": {"x": 87, "y": 36}, "end_location": {"x": 104, "y": 35}},
+    {"id": 38, "minute": 81, "period": 2, "team": "Riverside United", "player": "Player R14", "type": "interception", "outcome": "won", "possession_id": "H-P22", "phase": "defensive_phase", "pressure": "medium", "location": {"x": 60, "y": 45}, "end_location": null},
+    {"id": 39, "minute": 86, "period": 2, "team": "Harbour FC", "player": "Player H13", "type": "recovery", "outcome": "secured", "possession_id": "H-P23", "phase": "recovery", "pressure": "low", "location": {"x": 55, "y": 31}, "end_location": null},
+    {"id": 40, "minute": 90, "period": 2, "team": "Riverside United", "player": "Player R15", "type": "clearance", "outcome": "cleared", "possession_id": "R-P24", "phase": "defensive_phase", "pressure": "high", "location": {"x": 80, "y": 33}, "end_location": {"x": 47, "y": 34}}
   ]
 }

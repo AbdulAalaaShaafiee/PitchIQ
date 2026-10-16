@@ -9,14 +9,127 @@ from pitchiq.agents import PitchIQOrchestrator
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 DATA_FILE = PROJECT_ROOT / "data" / "events.json"
 
-VALID_TYPES = {"pass", "shot", "goal", "tackle"}
+
+VALID_TYPES = {
+    "pass",
+    "shot",
+    "goal",
+    "tackle",
+    "carry",
+    "interception",
+    "recovery",
+    "clearance",
+    "foul",
+    "pressure",
+    "duel",
+}
 
 VALID_OUTCOMES = {
     "pass": {"complete", "incomplete"},
     "shot": {"on_target", "off_target", "saved", "goal"},
     "goal": {"scored"},
     "tackle": {"won", "lost"},
+    "carry": {"successful", "unsuccessful"},
+    "interception": {"won", "missed"},
+    "recovery": {"secured", "contested"},
+    "clearance": {"cleared", "blocked"},
+    "foul": {"committed", "drawn"},
+    "pressure": {"applied", "escaped"},
+    "duel": {"won", "lost"},
 }
+
+VALID_PHASES = {
+    "build_up",
+    "settled_attack",
+    "transition",
+    "counterattack",
+    "defensive_phase",
+    "pressing",
+    "recovery",
+    "set_piece",
+}
+
+VALID_PRESSURE_LEVELS = {"low", "medium", "high"}
+
+
+def validate_event_context(event):
+    """Validate synthetic match context and pitch coordinates."""
+    period = event["period"]
+
+    if (
+        not isinstance(period, int)
+        or isinstance(period, bool)
+        or period not in {1, 2}
+    ):
+        raise ValueError(
+            f"Invalid period for event {event['id']}: {period}"
+        )
+
+    expected_period = 1 if event["minute"] <= 45 else 2
+
+    if period != expected_period:
+        raise ValueError(
+            f"Event {event['id']} has a period inconsistent "
+            "with its minute."
+        )
+
+    possession_id = event["possession_id"]
+
+    if not isinstance(possession_id, str) or not possession_id.strip():
+        raise ValueError(
+            f"Invalid possession ID for event {event['id']}."
+        )
+
+    if event["phase"] not in VALID_PHASES:
+        raise ValueError(
+            f"Invalid phase for event {event['id']}."
+        )
+
+    if event["pressure"] not in VALID_PRESSURE_LEVELS:
+        raise ValueError(
+            f"Invalid pressure level for event {event['id']}."
+        )
+
+    moving_types = {
+        "pass",
+        "carry",
+        "shot",
+        "goal",
+        "clearance",
+    }
+
+    for field in ("location", "end_location"):
+        point = event[field]
+
+        if point is None:
+            if field == "location" or (
+                field == "end_location"
+                and event["type"] in moving_types
+            ):
+                raise ValueError(
+                    f"Event {event['id']} requires {field} coordinates."
+                )
+            continue
+
+        if not isinstance(point, dict) or not {"x", "y"}.issubset(point):
+            raise ValueError(
+                f"Invalid {field} for event {event['id']}."
+            )
+
+        for axis, maximum in (("x", 105), ("y", 68)):
+            coordinate = point[axis]
+
+            if (
+                isinstance(coordinate, bool)
+                or not isinstance(coordinate, (int, float))
+                or not 0 <= coordinate <= maximum
+            ):
+                raise ValueError(
+                    f"Invalid {axis} coordinate in {field} "
+                    f"for event {event['id']}. "
+                    f"Expected a value from 0 to {maximum}."
+                )
+
 
 
 def load_match():
@@ -24,12 +137,16 @@ def load_match():
     with DATA_FILE.open("r", encoding="utf-8") as file:
         match = json.load(file)
 
+    # These fields belong to the match as a whole.
     required_fields = {
         "match_id",
         "home_team",
         "away_team",
         "events",
     }
+
+    if not isinstance(match, dict):
+        raise ValueError("Match data must be a JSON object.")
 
     if not required_fields.issubset(match):
         raise ValueError("Match is missing required fields.")
@@ -38,9 +155,17 @@ def load_match():
         raise ValueError("Events must be a list.")
 
     teams = {match["home_team"], match["away_team"]}
+
+    if len(teams) != 2 or not all(
+        isinstance(team, str) and team.strip()
+        for team in teams
+    ):
+        raise ValueError("Match must have two distinct team names.")
+
     seen_ids = set()
 
     for event in match["events"]:
+        # These fields belong to each individual event.
         required_event_fields = {
             "id",
             "minute",
@@ -48,18 +173,43 @@ def load_match():
             "player",
             "type",
             "outcome",
+            "period",
+            "possession_id",
+            "phase",
+            "pressure",
+            "location",
+            "end_location",
         }
+
+        if not isinstance(event, dict):
+            raise ValueError("Every event must be a JSON object.")
 
         if not required_event_fields.issubset(event):
             raise ValueError("An event is missing required fields.")
 
-        if event["id"] in seen_ids:
-            raise ValueError(f"Duplicate event ID: {event['id']}")
+        event_id = event["id"]
 
-        seen_ids.add(event["id"])
+        if (
+            not isinstance(event_id, int)
+            or isinstance(event_id, bool)
+        ):
+            raise ValueError("Event ID must be an integer.")
+
+        if event_id in seen_ids:
+            raise ValueError(f"Duplicate event ID: {event_id}")
+
+        seen_ids.add(event_id)
 
         if event["team"] not in teams:
             raise ValueError(f"Unknown team: {event['team']}")
+
+        if (
+            not isinstance(event["player"], str)
+            or not event["player"].strip()
+        ):
+            raise ValueError(
+                f"Invalid player name for event {event_id}."
+            )
 
         event_type = event["type"]
 
@@ -68,18 +218,25 @@ def load_match():
 
         if event["outcome"] not in VALID_OUTCOMES[event_type]:
             raise ValueError(
-                f"Invalid outcome for event {event['id']}"
+                f"Invalid outcome for event {event_id}"
             )
 
         minute = event["minute"]
 
-        if not isinstance(minute, int) or isinstance(minute, bool):
-            raise ValueError("Event minute must be an integer.")
+        if (
+            not isinstance(minute, int)
+            or isinstance(minute, bool)
+            or minute < 0
+        ):
+            raise ValueError(
+                "Event minute must be a nonnegative integer."
+            )
 
-        if minute < 0:
-            raise ValueError("Event minute cannot be negative.")
+        # Keep this call INSIDE the for event loop.
+        validate_event_context(event)
 
     return match
+
 
 
 def analyze_match(match):

@@ -21,23 +21,26 @@ class TestPitchIQ(unittest.TestCase):
             },
         )
 
+
     def test_harbour_statistics(self):
         stats = self.report["stats"]["Harbour FC"]
 
-        self.assertEqual(stats["shots"], 2)
-        self.assertEqual(stats["passes_completed"], 4)
-        self.assertEqual(stats["passes_attempted"], 4)
+        self.assertEqual(stats["shots"], 3)
+        self.assertEqual(stats["passes_completed"], 8)
+        self.assertEqual(stats["passes_attempted"], 8)
         self.assertEqual(stats["pass_accuracy_pct"], 100.0)
         self.assertEqual(stats["tackles_won"], 1)
+
 
     def test_riverside_statistics(self):
         stats = self.report["stats"]["Riverside United"]
 
-        self.assertEqual(stats["shots"], 1)
-        self.assertEqual(stats["passes_completed"], 1)
-        self.assertEqual(stats["passes_attempted"], 2)
-        self.assertEqual(stats["pass_accuracy_pct"], 50.0)
+        self.assertEqual(stats["shots"], 2)
+        self.assertEqual(stats["passes_completed"], 3)
+        self.assertEqual(stats["passes_attempted"], 4)
+        self.assertEqual(stats["pass_accuracy_pct"], 75.0)
         self.assertEqual(stats["tackles_won"], 0)
+
 
     def test_attacking_sequences_have_evidence(self):
         sequences = self.report["attacking_sequences"]

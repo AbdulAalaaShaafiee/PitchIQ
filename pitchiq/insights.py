@@ -71,7 +71,7 @@ def generate_insights(match, report, audience="fan"):
             f"{team}'s {passes}-pass attack ends with {finish_label}"
         )
 
-        
+
         if audience == "fan":
             summary = (
                 f"At minute {end_minute}, {team} connected "
@@ -92,12 +92,16 @@ def generate_insights(match, report, audience="fan"):
                 f"(recorded outcome: {finish_event['outcome']})."
             )
 
+
             why_it_matters = (
                 "The event order supports a build-up-to-shot description. "
-                "Without pitch coordinates, defensive pressure, or "
-                "shot-quality data, it does not prove that the passes "
-                "broke a defensive line or created a high-quality chance."
+                "The dataset contains synthetic locations and pressure labels, "
+                "but these are not calibrated tracking measurements. Without "
+                "a validated shot-quality model, this evidence does not prove "
+                "that the passes broke a defensive line or created a "
+                "high-quality chance."
             )
+
 
 
         insights.append({
@@ -110,12 +114,13 @@ def generate_insights(match, report, audience="fan"):
             "summary": summary,
             "why_it_matters": why_it_matters,
             "evidence_event_ids": list(evidence_ids),
+
             "limitation": (
-                "The match uses synthetic data. Event records do not "
-                "include pitch coordinates, defensive pressure, or "
-                "expected-goals values, so this sequence alone cannot "
-                "establish shot quality or tactical causation."
+                "All event coordinates and pressure labels are synthetic estimates, "
+                "not tracking measurements. The current rules do not calculate "
+                "validated shot quality or prove tactical causation."
             ),
+
         })
 
     return insights

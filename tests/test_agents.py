@@ -1,4 +1,5 @@
 
+import copy
 import unittest
 
 from pitchiq.agents import (
@@ -116,6 +117,94 @@ class TestPitchIQAgents(unittest.TestCase):
             verification["errors"],
         )
 
+
+    def test_verifier_rejects_saved_shot_described_as_goal(self):
+        insights = generate_insights(
+            self.match, self.report, audience="fan"
+        )
+        insights[0]["summary"] = (
+            "At minute 13, Harbour FC connected 2 completed "
+            "passes before Player H3 scored a goal."
+        )
+
+        verification = EvidenceVerificationAgent().run(
+            self.match, self.report, insights, "fan"
+        )
+
+        self.assertFalse(verification["passed"])
+        self.assertIn(
+            "All narrative fields are complete",
+            verification["errors"],
+        )
+
+    def test_verifier_rejects_valid_ids_from_wrong_sequence(self):
+        insights = generate_insights(
+            self.match, self.report, audience="fan"
+        )
+
+        # These event IDs exist, but they do not form a detected attack.
+        insights[0]["evidence_event_ids"] = [11, 12, 13]
+
+        verification = EvidenceVerificationAgent().run(
+            self.match, self.report, insights, "fan"
+        )
+
+        self.assertFalse(verification["passed"])
+        self.assertIn(
+            "Every insight maps to a detected sequence",
+            verification["errors"],
+        )
+
+    def test_verifier_rejects_empty_insights(self):
+        verification = EvidenceVerificationAgent().run(
+            self.match, self.report, [], "fan"
+        )
+
+        self.assertFalse(verification["passed"])
+        self.assertIn(
+            "Every sequence has exactly one insight",
+            verification["errors"],
+        )
+
+    def test_verifier_rejects_malformed_evidence_without_crashing(self):
+        insights = generate_insights(
+            self.match, self.report, audience="fan"
+        )
+        insights[0]["evidence_event_ids"] = "1, 2, 3"
+
+        verification = EvidenceVerificationAgent().run(
+            self.match, self.report, insights, "fan"
+        )
+
+        self.assertFalse(verification["passed"])
+        self.assertIn(
+            "All evidence IDs exist in the match events",
+            verification["errors"],
+        )
+
+    def test_verifier_rejects_non_chronological_sequence(self):
+        match = copy.deepcopy(self.match)
+
+        # Make event 2 occur after the finishing shot at minute 13.
+        event_2 = next(
+            event for event in match["events"]
+            if event["id"] == 2
+        )
+        event_2["minute"] = 14
+
+        insights = generate_insights(
+            match, self.report, audience="fan"
+        )
+
+        verification = EvidenceVerificationAgent().run(
+            match, self.report, insights, "fan"
+        )
+
+        self.assertFalse(verification["passed"])
+        self.assertIn(
+            "Every insight maps to a detected sequence",
+            verification["errors"],
+        )
 
 if __name__ == "__main__":
     unittest.main()
