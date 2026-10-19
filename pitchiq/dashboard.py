@@ -405,7 +405,7 @@ replay_tab, overview_tab, insights_tab, workflow_tab, events_tab = st.tabs([
     "🎮 Match replay",
     "📊 Match overview",
     "💡 Insights & evidence",
-    "🧠 Agent workflow",
+    "🛰️ Agent Mission Control",
     "🔎 Event explorer",
 ])
 
@@ -1152,52 +1152,256 @@ with insights_tab:
                     st.write(insight["limitation"])
 
 
-# AGENT WORKFLOW
-with workflow_tab:
-    st.subheader("Multi-agent execution")
 
+# AGENT MISSION CONTROL
+with workflow_tab:
+    st.subheader("Agent Mission Control")
     st.caption(
-        "These are deterministic Python agents coordinated through "
-        "a local workflow. They are not LLM-powered agents yet."
+        "Inspect the local multi-agent workflow, its handoffs, "
+        "and the evidence checks protecting each generated insight."
     )
 
-    for index, step in enumerate(result["steps"], start=1):
-        with st.container(border=True):
-            status = step["status"].upper()
-            icon = "✅" if status in {"COMPLETED", "PASSED"} else "❌"
+    steps = result["steps"]
+    handoffs = result["handoffs"]
+    verification = result["shared_state"]["verification"]
 
-            st.markdown(
-                f"**{index}. {step['agent']}** · {icon} {status}"
-            )
-            st.write(step["detail"])
+    agent_info = {
+        "Event Analysis Agent": {
+            "number": "01",
+            "color": "#168BDA",
+            "role": "MATCH INTELLIGENCE",
+            "description": (
+                "Processes the synthetic event log, calculates team "
+                "statistics, and detects attacking sequences using "
+                "explicit rules."
+            ),
+            "output": "Match analysis report",
+        },
+        "Storytelling Agent": {
+            "number": "02",
+            "color": "#8B5CF6",
+            "role": "INSIGHT GENERATION",
+            "description": (
+                "Converts detected sequences into fan-friendly or "
+                "analyst-focused narratives with supporting event IDs."
+            ),
+            "output": "Audience-specific insights",
+        },
+        "Evidence Verification Agent": {
+            "number": "03",
+            "color": "#0DA878",
+            "role": "EVIDENCE INTEGRITY",
+            "description": (
+                "Checks event references, sequence consistency, "
+                "metadata, audience mode, and narrative consistency."
+            ),
+            "output": "Verification report",
+        },
+    }
 
-    st.subheader("Agent handoffs")
+    status_icons = {
+        "completed": "✅",
+        "passed": "✅",
+        "rejected": "❌",
+        "failed": "❌",
+        "running": "🔄",
+    }
 
-    for handoff in result["handoffs"]:
-        st.markdown(
-            f"**{handoff['from']}** → **{handoff['to']}**"
-        )
-        st.caption(
-            "Shared state: "
-            + ", ".join(handoff["shared_state_fields"])
-        )
+    # Main run summary
+    passed_count = verification["checks_passed"]
+    total_checks = verification["checks_total"]
+    all_passed = verification["passed"]
 
-    st.subheader("Evidence verification")
+    summary_cols = st.columns(4)
 
-    if verification["passed"]:
+    summary_cols[0].metric(
+        "Specialist agents",
+        len(steps),
+    )
+    summary_cols[1].metric(
+        "Recorded handoffs",
+        len(handoffs),
+    )
+    summary_cols[2].metric(
+        "Checks passed",
+        f"{passed_count}/{total_checks}",
+    )
+    summary_cols[3].metric(
+        "Workflow result",
+        "PASSED" if all_passed else "REJECTED",
+    )
+
+    if all_passed:
         st.success(
-            f"PASSED — {verification['checks_passed']}/"
-            f"{verification['checks_total']} checks"
+            "Evidence verification passed. "
+            "The current insights satisfy all configured checks."
         )
     else:
         st.error(
-            f"FAILED — {verification['checks_passed']}/"
-            f"{verification['checks_total']} checks"
+            "Evidence verification failed. "
+            "Review the failed checks before relying on the insights."
         )
 
-    for check in verification["checks"]:
-        marker = "✅" if check["passed"] else "❌"
-        st.write(f"{marker} {check['name']}")
+    # Agent pipeline
+    st.markdown("### The agent pipeline")
+
+    columns = st.columns(3)
+
+    for index, step in enumerate(steps):
+        agent_name = step["agent"]
+        info = agent_info.get(agent_name, {
+            "number": f"{index + 1:02d}",
+            "color": "#64748B",
+            "role": "SPECIALIST AGENT",
+            "description": "Executes a workflow stage.",
+            "output": "Workflow output",
+        })
+
+        raw_status = str(step["status"]).lower()
+        icon = status_icons.get(raw_status, "⏳")
+        border_color = info["color"]
+
+        with columns[index % 3]:
+            with st.container(border=True):
+                st.markdown(
+                    f"""
+                    <div style="
+                        color:{border_color};
+                        font-size:0.8rem;
+                        font-weight:800;
+                        letter-spacing:0.12em;
+                    ">
+                        AGENT {info['number']}
+                    </div>
+                    <div style="
+                        color:#60758E;
+                        font-size:0.72rem;
+                        font-weight:750;
+                        margin-top:5px;
+                    ">
+                        {info['role']}
+                    </div>
+                    """,
+                    unsafe_allow_html=True,
+                )
+
+                st.markdown(f"### {agent_name}")
+                st.write(info["description"])
+
+                st.markdown(f"**Output:** {info['output']}")
+                st.markdown(
+                    f"**Status:** {icon} {raw_status.upper()}"
+                )
+
+                with st.expander("Execution details"):
+                    st.write(step["detail"])
+
+    # Visible handoff trace
+    st.markdown("### Agent-to-agent handoffs")
+    st.caption(
+        "These handoffs show the local orchestrator's recorded workflow "
+        "transitions and the state fields passed between stages."
+    )
+
+    if handoffs:
+        for index, handoff in enumerate(handoffs, start=1):
+            source = handoff["from"]
+            destination = handoff["to"]
+            handoff_status = str(handoff["status"]).upper()
+
+            source_info = agent_info.get(source, {})
+            destination_info = agent_info.get(destination, {})
+
+            source_color = source_info.get("color", "#64748B")
+            destination_color = destination_info.get("color", "#64748B")
+
+            with st.container(border=True):
+                left, arrow, right = st.columns([5, 1, 5])
+
+                with left:
+                    st.markdown(
+                        f"**{source}**",
+                        help=f"Source of handoff {index}",
+                    )
+                    st.caption("Sends workflow state")
+
+                with arrow:
+                    st.markdown("## →")
+
+                with right:
+                    st.markdown(f"**{destination}**")
+                    st.caption(f"Recorded status: {handoff_status}")
+
+                st.progress(
+                    1.0 if handoff_status == "COMPLETED" else 0.0,
+                    text=f"Handoff {index}",
+                )
+
+                st.caption(
+                    "Shared fields: "
+                    + ", ".join(handoff["shared_state_fields"])
+                )
+    else:
+        st.info("No agent handoffs have been recorded.")
+
+    # Verification dashboard
+    st.markdown("### Evidence verification centre")
+
+    progress_value = (
+        passed_count / total_checks
+        if total_checks
+        else 0.0
+    )
+
+    st.progress(
+        progress_value,
+        text=f"{passed_count} of {total_checks} checks passed",
+    )
+
+    check_names = [
+        check["name"] for check in verification["checks"]
+    ]
+
+    selected_check = st.selectbox(
+        "Inspect a verification check",
+        options=["All checks", *check_names],
+        key="mission_control_check",
+    )
+
+    visible_checks = verification["checks"]
+
+    if selected_check != "All checks":
+        visible_checks = [
+            check for check in verification["checks"]
+            if check["name"] == selected_check
+        ]
+
+    for check in visible_checks:
+        check_cols = st.columns([1, 7, 2])
+
+        with check_cols[0]:
+            st.write("✅" if check["passed"] else "❌")
+
+        with check_cols[1]:
+            st.write(check["name"])
+
+        with check_cols[2]:
+            st.write("PASS" if check["passed"] else "FAIL")
+
+    if verification["errors"]:
+        with st.expander("Review verification errors", expanded=True):
+            for error in verification["errors"]:
+                st.error(error)
+
+    # Explain the current system honestly
+    st.markdown("### System architecture")
+
+    st.info(
+        "PitchIQ currently uses deterministic Python agents rather than "
+        "LLM-powered agents. The workflow view displays actual results from "
+        "the local orchestrator; it does not represent independent cloud "
+        "workers or a live production monitoring system."
+    )
 
 
 # EVENT EXPLORER
