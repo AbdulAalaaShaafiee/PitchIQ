@@ -6,6 +6,7 @@ All match data is synthetic.
 """
 
 import html
+import math
 
 import altair as alt
 import pandas as pd
@@ -25,92 +26,185 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+    :root {
+        --pq-ink: #14243a;
+        --pq-muted: #60758e;
+        --pq-green: #10b981;
+        --pq-blue: #168bda;
+        --pq-amber: #f5a623;
+        --pq-border: #dce8f3;
+    }
+
+    .stApp {
+        background: linear-gradient(
+            145deg,
+            #f2f9ff 0%,
+            #f7fff9 55%,
+            #ffffff 100%
+        );
+        color: var(--pq-ink);
+    }
+
+.block-container {
+    max-width: 1500px;
+    padding-top: 1.6rem;
+    padding-bottom: 3rem;
+}
+
+.pitchiq-title {
+    font-size: 3rem;
+    font-weight: 900;
+    letter-spacing: -0.065em;
+    line-height: 1.08;
+    color: #102a43;
+    margin-bottom: 0;
+}
+
+.pitchiq-subtitle {
+    color: var(--pq-muted);
+    font-size: 0.85rem;
+    font-weight: 750;
+    letter-spacing: 0.14em;
+    margin: 0.5rem 0 1.4rem;
+}
+
+.demo-banner {
+    background: linear-gradient(105deg, #d9f9ec, #e5f3ff);
+    border: 1px solid #c7eadf;
+    border-radius: 16px;
+    padding: 15px 19px;
+    margin: 12px 0 24px;
+    color: #174d48;
+}
+
+.team-card,
+.score-card {
+    min-height: 124px;
+    border: 1px solid var(--pq-border);
+    border-radius: 20px;
+    padding: 22px 16px;
+    text-align: center;
+    box-shadow: 0 7px 24px rgba(31, 77, 112, 0.07);
+    transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.team-card {
+    background: linear-gradient(150deg, #ffffff, #e9fbf3);
+}
+
+.score-card {
+    background: linear-gradient(135deg, #0f9f76, #168bda);
+    color: #ffffff;
+    border-color: transparent;
+}
+
+.team-card:hover,
+.score-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 28px rgba(31, 77, 112, 0.13);
+}
+
+.team-name {
+    font-size: 1.25rem;
+    font-weight: 850;
+    overflow-wrap: anywhere;
+    color: #14243a;
+}
+
+.team-label,
+.score-caption {
+    font-size: 0.72rem;
+    font-weight: 750;
+    letter-spacing: 0.12em;
+    margin-bottom: 8px;
+}
+
+.team-label {
+    color: #60758e;
+}
+
+.score-value {
+    font-size: 2.45rem;
+    font-weight: 900;
+    letter-spacing: 0.04em;
+    line-height: 1.15;
+}
+
+.score-caption {
+    margin-top: 6px;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+div[data-testid="stMetric"] {
+    background: #ffffff;
+    border: 1px solid var(--pq-border);
+    border-radius: 16px;
+    padding: 15px 17px;
+    box-shadow: 0 5px 20px rgba(31, 77, 112, 0.05);
+}
+
+div[data-testid="stMetricLabel"] {
+    color: var(--pq-muted);
+    font-weight: 650;
+}
+
+[data-testid="stTabs"] button[aria-selected="true"] {
+    background: #dcf8eb;
+    color: #087751;
+    border-radius: 12px 12px 0 0;
+    font-weight: 800;
+}
+
+[data-testid="stTabs"] button {
+    transition: background 140ms ease, color 140ms ease;
+}
+
+.stButton > button {
+    border: 1px solid #c9e6db;
+    border-radius: 12px;
+    min-height: 42px;
+    font-weight: 750;
+    transition: transform 140ms ease, box-shadow 140ms ease;
+}
+
+.stButton > button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 7px 16px rgba(22, 139, 218, 0.12);
+    border-color: #10b981;
+    color: #087751;
+}
+
+[data-testid="stExpander"] {
+    background: #ffffff;
+    border: 1px solid var(--pq-border);
+    border-radius: 14px;
+}
+
+[data-testid="stDataFrame"],
+[data-testid="stTable"] {
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.section-note {
+    color: var(--pq-muted);
+    font-size: 0.9rem;
+}
+
+@media (max-width: 800px) {
     .block-container {
-        max-width: 1440px;
-        padding-top: 1.8rem;
-        padding-bottom: 2.5rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
     }
 
     .pitchiq-title {
-        font-size: 2.8rem;
-        font-weight: 850;
-        letter-spacing: -0.06em;
-        line-height: 1.1;
-        margin-bottom: 0;
-    }
-
-    .pitchiq-subtitle {
-        color: #738198;
-        font-size: 0.9rem;
-        letter-spacing: 0.12em;
-        margin-top: 0.45rem;
-        margin-bottom: 1.2rem;
-    }
-
-    .demo-banner {
-        background: rgba(40, 120, 90, 0.09);
-        border: 1px solid rgba(40, 120, 90, 0.28);
-        border-radius: 12px;
-        padding: 12px 16px;
-        margin: 10px 0 22px 0;
-    }
-
-    .team-card {
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        padding: 23px 18px;
-        text-align: center;
-        min-height: 115px;
-        background: var(--secondary-background-color);
+        font-size: 2.35rem;
     }
 
     .team-name {
-        font-size: 1.3rem;
-        font-weight: 750;
-        overflow-wrap: anywhere;
+        font-size: 1rem;
     }
-
-    .team-label {
-        color: #738198;
-        font-size: 0.72rem;
-        letter-spacing: 0.12em;
-        margin-bottom: 7px;
-    }
-
-    .score-card {
-        border: 1px solid var(--border-color);
-        border-radius: 16px;
-        padding: 17px 10px;
-        text-align: center;
-        min-height: 115px;
-        background: var(--secondary-background-color);
-    }
-
-    .score-value {
-        font-size: 2.35rem;
-        font-weight: 850;
-        letter-spacing: 0.06em;
-        line-height: 1.2;
-    }
-
-    .score-caption {
-        color: #738198;
-        font-size: 0.72rem;
-        letter-spacing: 0.12em;
-        margin-top: 5px;
-    }
-
-    div[data-testid="stMetric"] {
-        background: var(--secondary-background-color);
-        border: 1px solid var(--border-color);
-        border-radius: 13px;
-        padding: 14px 16px;
-    }
-
-    .section-note {
-        color: #738198;
-        font-size: 0.88rem;
-    }
+}
     </style>
     """,
     unsafe_allow_html=True,
@@ -307,13 +401,441 @@ metric_cols[3].metric(
 
 
 # Main dashboard sections
-overview_tab, insights_tab, workflow_tab, events_tab = st.tabs([
+replay_tab, overview_tab, insights_tab, workflow_tab, events_tab = st.tabs([
+    "🎮 Match replay",
     "📊 Match overview",
     "💡 Insights & evidence",
     "🧠 Agent workflow",
     "🔎 Event explorer",
 ])
 
+
+# INTERACTIVE MATCH REPLAY
+with replay_tab:
+    st.subheader("Interactive match replay")
+    st.caption(
+        "Explore the synthetic match event by event. "
+        "Score, statistics, pitch markers and insights update with the replay."
+    )
+
+    replay_events = sorted(
+        match["events"],
+        key=lambda event: (
+            event.get("period", 1),
+            event["minute"],
+            event["id"],
+        ),
+    )
+    total = len(replay_events)
+
+    if "replay_cursor" not in st.session_state:
+        st.session_state["replay_cursor"] = total
+
+    st.session_state["replay_cursor"] = min(
+        max(0, int(st.session_state["replay_cursor"])),
+        total,
+    )
+
+    def replay_previous():
+        st.session_state["replay_cursor"] = max(
+            0, st.session_state["replay_cursor"] - 1
+        )
+
+    def replay_next():
+        st.session_state["replay_cursor"] = min(
+            total, st.session_state["replay_cursor"] + 1
+        )
+
+    key_moments = {}
+    for index, event in enumerate(replay_events, start=1):
+        if event["type"] in {"shot", "goal"}:
+            label = (
+                f"{event['minute']}' · {event['team']} · "
+                f"{finish_label(event)} · Event {event['id']}"
+            )
+            key_moments[label] = index
+
+    controls = st.columns([1, 1, 2, 1])
+
+    with controls[0]:
+        st.button(
+            "◀ Previous",
+            key="replay_previous_button",
+            on_click=replay_previous,
+            disabled=st.session_state["replay_cursor"] == 0,
+            width="stretch",
+        )
+
+    with controls[1]:
+        st.button(
+            "Next ▶",
+            key="replay_next_button",
+            on_click=replay_next,
+            disabled=st.session_state["replay_cursor"] >= total,
+            width="stretch",
+        )
+
+    with controls[2]:
+        if key_moments:
+            selected_moment = st.selectbox(
+                "Jump to moment",
+                list(key_moments.keys()),
+                key="replay_jump_choice",
+            )
+        else:
+            selected_moment = None
+            st.caption("No shots or goals available.")
+
+    with controls[3]:
+        if st.button(
+            "Jump",
+            key="replay_jump_button",
+            type="primary",
+            disabled=selected_moment is None,
+            width="stretch",
+        ):
+            st.session_state["replay_cursor"] = key_moments[
+                selected_moment
+            ]
+
+    cursor = st.slider(
+        "Replay position",
+        min_value=0,
+        max_value=total,
+        step=1,
+        key="replay_cursor",
+        help="Move backward or forward through the match events.",
+    )
+
+    revealed = replay_events[:cursor]
+    current = revealed[-1] if revealed else None
+
+    st.progress(
+        cursor / max(total, 1),
+        text=f"{cursor} of {total} events revealed",
+    )
+
+    # Run the existing analysis and agents on the revealed portion only.
+    replay_match = {**match, "events": revealed}
+    replay_result = PitchIQOrchestrator(analyze_match).run(
+        replay_match,
+        audience,
+    )
+
+    replay_report = replay_result["shared_state"]["report"]
+    replay_insights = replay_result["shared_state"]["insights"]
+    replay_verification = replay_result["shared_state"]["verification"]
+
+    replay_score = replay_report["score"]
+    replay_stats = replay_report["stats"]
+
+    score_cols = st.columns([1, 0.8, 1])
+    score_cols[0].metric(home, replay_score[home])
+    score_cols[1].metric("Events revealed", f"{cursor}/{total}")
+    score_cols[2].metric(away, replay_score[away])
+
+    stats_cols = st.columns(4)
+    home_accuracy = replay_stats[home]["pass_accuracy_pct"]
+    away_accuracy = replay_stats[away]["pass_accuracy_pct"]
+
+    stats_cols[0].metric("Home shots", replay_stats[home]["shots"])
+    stats_cols[1].metric("Away shots", replay_stats[away]["shots"])
+    stats_cols[2].metric(
+        "Home pass accuracy",
+        f"{home_accuracy}%" if home_accuracy is not None else "N/A",
+    )
+    stats_cols[3].metric(
+        "Away pass accuracy",
+        f"{away_accuracy}%" if away_accuracy is not None else "N/A",
+    )
+
+    if current:
+        st.markdown(
+            f"**Current event: {current['minute']}' · "
+            f"{current['team']} · {current['player']}**"
+        )
+        st.write(
+            f"{current['type'].replace('_', ' ').title()} — "
+            f"{current['outcome'].replace('_', ' ')}"
+        )
+    else:
+        st.info("Kickoff: no events have been revealed.")
+
+    # Draw a pitch using the synthetic event coordinates.
+    st.markdown("### Event pitch")
+    st.caption(
+        "The pitch positions are synthetic demonstration coordinates, "
+        "not real player-tracking measurements."
+    )
+
+    pitch_col, detail_col = st.columns([1.4, 1])
+
+    with pitch_col:
+        pitch_segments = {
+            "boundary": [
+                (0, 0), (105, 0), (105, 68), (0, 68), (0, 0)
+            ],
+            "halfway": [(52.5, 0), (52.5, 68)],
+            "left_box": [
+                (0, 13.84), (16.5, 13.84), (16.5, 54.16),
+                (0, 54.16), (0, 13.84)
+            ],
+            "right_box": [
+                (88.5, 13.84), (105, 13.84), (105, 54.16),
+                (88.5, 54.16), (88.5, 13.84)
+            ],
+            "centre_circle": [
+                (
+                    52.5 + 9.15 * math.cos(math.radians(degree)),
+                    34 + 9.15 * math.sin(math.radians(degree)),
+                )
+                for degree in range(0, 361, 10)
+            ],
+        }
+
+        line_rows = []
+        for segment, points in pitch_segments.items():
+            for order, (x, y) in enumerate(points):
+                line_rows.append({
+                    "segment": segment,
+                    "order": order,
+                    "x": x,
+                    "y": y,
+                })
+
+        line_df = pd.DataFrame(line_rows)
+
+        field_background = alt.Chart(
+            pd.DataFrame([{"x": 0, "x2": 105, "y": 0, "y2": 68}])
+        ).mark_rect(
+            color="#dff4e5",
+            stroke="#a3cbb0",
+        ).encode(
+            x=alt.X("x:Q", scale=alt.Scale(domain=[0, 105]), axis=None),
+            x2="x2:Q",
+            y=alt.Y("y:Q", scale=alt.Scale(domain=[68, 0]), axis=None),
+            y2="y2:Q",
+        )
+
+        field_lines = alt.Chart(line_df).mark_line(
+            color="#ffffff",
+            strokeWidth=2,
+        ).encode(
+            x=alt.X("x:Q", scale=alt.Scale(domain=[0, 105]), axis=None),
+            y=alt.Y("y:Q", scale=alt.Scale(domain=[68, 0]), axis=None),
+            detail="segment:N",
+            order="order:Q",
+        )
+
+        pitch_chart = field_background + field_lines
+        recent_rows = []
+
+        for event in revealed[-12:]:
+            point = event.get("location") or {}
+            if {"x", "y"}.issubset(point):
+                recent_rows.append({
+                    "id": event["id"],
+                    "minute": event["minute"],
+                    "team": event["team"],
+                    "player": event["player"],
+                    "type": event["type"],
+                    "outcome": event["outcome"],
+                    "x": point["x"],
+                    "y": point["y"],
+                })
+
+        team_scale = alt.Scale(
+            domain=[home, away],
+            range=["#0da878", "#168bda"],
+        )
+
+        tooltip = [
+            alt.Tooltip("id:Q", title="Event ID"),
+            alt.Tooltip("minute:Q", title="Minute"),
+            alt.Tooltip("team:N", title="Team"),
+            alt.Tooltip("player:N", title="Player"),
+            alt.Tooltip("type:N", title="Event"),
+            alt.Tooltip("outcome:N", title="Outcome"),
+        ]
+
+        if recent_rows:
+            recent_df = pd.DataFrame(recent_rows)
+            history_df = recent_df[
+                recent_df["id"] != (
+                    current["id"] if current else -1
+                )
+            ]
+
+            if not history_df.empty:
+                history_points = alt.Chart(history_df).mark_circle(
+                    size=100,
+                    stroke="white",
+                    strokeWidth=1,
+                ).encode(
+                    x=alt.X(
+                        "x:Q",
+                        scale=alt.Scale(domain=[0, 105]),
+                        axis=None,
+                    ),
+                    y=alt.Y(
+                        "y:Q",
+                        scale=alt.Scale(domain=[68, 0]),
+                        axis=None,
+                    ),
+                    color=alt.Color("team:N", scale=team_scale),
+                    tooltip=tooltip,
+                )
+                pitch_chart = pitch_chart + history_points
+
+            if current and current["id"] in recent_df["id"].values:
+                current_df = recent_df[
+                    recent_df["id"] == current["id"]
+                ]
+
+                current_point = alt.Chart(current_df).mark_point(
+                    shape="star",
+                    size=280,
+                    filled=True,
+                    color="#f59e0b",
+                    stroke="white",
+                    strokeWidth=1,
+                ).encode(
+                    x=alt.X(
+                        "x:Q",
+                        scale=alt.Scale(domain=[0, 105]),
+                        axis=None,
+                    ),
+                    y=alt.Y(
+                        "y:Q",
+                        scale=alt.Scale(domain=[68, 0]),
+                        axis=None,
+                    ),
+                    tooltip=tooltip,
+                )
+                pitch_chart = pitch_chart + current_point
+
+        st.altair_chart(
+            pitch_chart.properties(height=330),
+            width="stretch",
+        )
+
+    with detail_col:
+        st.markdown("### Event details")
+
+        if current:
+            st.write(f"**Player:** {current['player']}")
+            st.write(f"**Team:** {current['team']}")
+            st.write(f"**Event:** {current['type']}")
+            st.write(f"**Outcome:** {current['outcome']}")
+            st.write(f"**Pressure label:** {current['pressure']}")
+            st.write(f"**Possession:** {current['possession_id']}")
+            st.caption(
+                "Pressure and possession data are synthetic."
+            )
+        else:
+            st.write("Move to the first event to inspect its details.")
+
+        st.markdown("### Agent status")
+
+        for step in replay_result["steps"]:
+            marker = (
+                "✅"
+                if step["status"] in {"completed", "passed"}
+                else "❌"
+            )
+            st.write(f"{marker} **{step['agent']}**")
+            st.caption(step["status"].title())
+
+    st.markdown("### Event timeline")
+
+    timeline_rows = []
+    for index, event in enumerate(replay_events, start=1):
+        if index < cursor:
+            state = "Revealed"
+        elif index == cursor and cursor > 0:
+            state = "Current"
+        else:
+            state = "Upcoming"
+
+        offset = ((index % 3) - 1) * 0.12
+        timeline_rows.append({
+            "Minute": event["minute"],
+            "Plot minute": max(
+                0,
+                min(90, event["minute"] + offset),
+            ),
+            "Team": event["team"],
+            "Player": event["player"],
+            "Event ID": event["id"],
+            "Type": event["type"],
+            "Outcome": event["outcome"],
+            "State": state,
+        })
+
+    timeline_df = pd.DataFrame(timeline_rows)
+
+    if not timeline_df.empty:
+        timeline_chart = alt.Chart(timeline_df).mark_circle(
+            size=100,
+            filled=True,
+        ).encode(
+            x=alt.X(
+                "Plot minute:Q",
+                scale=alt.Scale(domain=[0, 90]),
+                axis=alt.Axis(title="Match minute", tickCount=10),
+            ),
+            y=alt.Y("Team:N", sort=[home, away], title=None),
+            color=alt.Color(
+                "State:N",
+                scale=alt.Scale(
+                    domain=["Revealed", "Current", "Upcoming"],
+                    range=["#10a878", "#f59e0b", "#cbd5e1"],
+                ),
+            ),
+            tooltip=[
+                alt.Tooltip("Minute:Q"),
+                alt.Tooltip("Event ID:Q"),
+                alt.Tooltip("Team:N"),
+                alt.Tooltip("Player:N"),
+                alt.Tooltip("Type:N"),
+                alt.Tooltip("Outcome:N"),
+                alt.Tooltip("State:N"),
+            ],
+        ).properties(height=140)
+
+        st.altair_chart(timeline_chart, width="stretch")
+
+    st.markdown("### Insights at this replay position")
+
+    if not replay_verification["passed"]:
+        st.error("Replay evidence verification failed.")
+        st.write(replay_verification["errors"])
+    elif replay_insights:
+        st.success(
+            f"Evidence verification passed: "
+            f"{replay_verification['checks_passed']}/"
+            f"{replay_verification['checks_total']} checks."
+        )
+
+        for insight in replay_insights:
+            with st.container(border=True):
+                st.markdown(f"**{insight['title']}**")
+                st.write(insight["summary"])
+                st.caption(
+                    "Evidence event IDs: "
+                    + ", ".join(
+                        map(str, insight["evidence_event_ids"])
+                    )
+                )
+
+                with st.expander("Why it matters and limitations"):
+                    st.write(insight["why_it_matters"])
+                    st.write(insight["limitation"])
+    else:
+        st.info(
+            "No qualifying attacking sequence has been completed yet. "
+            "Advance the replay to discover one."
+        )
 
 # MATCH OVERVIEW
 with overview_tab:
