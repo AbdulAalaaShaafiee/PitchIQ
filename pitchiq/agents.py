@@ -184,14 +184,18 @@ class EventAnalysisAgent:
 
 
 class StorytellingAgent:
-    """Creates audience-specific insights from the analysis."""
+    """Creates deterministic insights and optional, guarded local-AI wording."""
 
     name = "Storytelling Agent"
 
     def run(self, match, report, audience):
         from pitchiq.insights import generate_insights
+        from pitchiq.local_storytelling import add_local_ai_commentary
 
-        return generate_insights(match, report, audience=audience)
+        # The original narrative remains authoritative and is still verified
+        # exactly. Gemma's optional paraphrase is stored in a separate field.
+        insights = generate_insights(match, report, audience=audience)
+        return add_local_ai_commentary(match, insights, audience)
 
 
 class EvidenceVerificationAgent:

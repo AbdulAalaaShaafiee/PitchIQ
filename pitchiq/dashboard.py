@@ -821,6 +821,14 @@ with replay_tab:
             with st.container(border=True):
                 st.markdown(f"**{insight['title']}**")
                 st.write(insight["summary"])
+                if insight.get("ai_commentary"):
+                    st.markdown("**Gemma 4 AI-generated paraphrase**")
+                    st.write(insight["ai_commentary"])
+                    st.caption("AI wording is separate; the verified deterministic summary above remains authoritative.")
+                elif insight.get("ai_commentary_status") == "disabled":
+                    st.caption("Gemma commentary is disabled. Set PITCHIQ_USE_LOCAL_AI=1 before launching the dashboard to enable it.")
+                else:
+                    st.caption("Gemma commentary was unavailable or rejected; the verified deterministic summary is shown.")
                 st.caption(
                     "Evidence event IDs: "
                     + ", ".join(
@@ -880,8 +888,15 @@ with overview_tab:
         },
     ]
 
+    comparison_df = pd.DataFrame(comparison_rows)
+    # Normalize displayed values without changing the underlying match statistics.
+    for team_name in (home, away):
+        comparison_df[team_name] = comparison_df[team_name].map(
+            lambda value: "N/A" if pd.isna(value) else str(value)
+        )
+
     st.dataframe(
-        pd.DataFrame(comparison_rows),
+        comparison_df,
         hide_index=True,
         width="stretch"
     )
@@ -1126,6 +1141,14 @@ with insights_tab:
                 )
 
                 st.write(insight["summary"])
+                if insight.get("ai_commentary"):
+                    st.markdown("**Gemma 4 AI-generated paraphrase**")
+                    st.write(insight["ai_commentary"])
+                    st.caption("AI wording is separate; the verified deterministic summary above remains authoritative.")
+                elif insight.get("ai_commentary_status") == "disabled":
+                    st.caption("Gemma commentary is disabled. Set PITCHIQ_USE_LOCAL_AI=1 before launching the dashboard to enable it.")
+                else:
+                    st.caption("Gemma commentary was unavailable or rejected; the verified deterministic summary is shown.")
 
                 st.markdown("**Why it matters**")
                 st.write(insight["why_it_matters"])
