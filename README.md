@@ -1,48 +1,51 @@
-# PitchIQ | Synthetic Match Intelligence
+# PitchIQ | Local-First Football Match Intelligence
 
-PitchIQ is a local-first football match intelligence prototype that converts synthetic match events into statistics, attacking-sequence insights, and evidence-linked narratives.
+PitchIQ is a local-first football match-intelligence prototype. It analyzes a **synthetic demonstration match**, identifies selected attacking sequences, and presents evidence-linked insights through an interactive Streamlit dashboard.
 
-It demonstrates how specialist software agents can work together to analyze match events, communicate findings for different audiences, and verify generated insights before displaying them.
+PitchIQ combines deterministic match analysis and evidence verification with **optional local AI storytelling** using Gemma 4 through Ollama and Microsoft Agent Framework. It does not require a paid AI API for local inference.
 
-> **Prototype notice:** This project currently uses synthetic demonstration data and deterministic Python agents. It does not yet use LLM-powered agents or real match-tracking data.
+> **Prototype notice:** The current match dataset is synthetic. It is not a verified real-world fixture, and the project does not use live match feeds or calibrated player-tracking data.
 
 ## Features
 
-- **Match analysis:** Calculates scores, shots, passing accuracy, and tackles won.
-- **Attacking-sequence detection:** Identifies selected passing sequences that lead to a shot or goal using explicit rules.
-- **Audience-specific insights:** Generates fan-friendly and analyst-focused narratives.
-- **Multi-agent workflow:** Coordinates event analysis, storytelling, and evidence verification.
-- **Evidence verification:** Checks event references, sequence consistency, team and minute metadata, audience mode, and narrative consistency.
-- **Interactive dashboard:** Displays match statistics, comparison charts, an attacking-sequence timeline, supporting evidence, agent handoffs, and event records.
-- **Event explorer:** Filters synthetic events by team and event type and searches by player or event ID.
-- **Automated tests:** Covers match analysis, agent orchestration, and evidence-verification failure cases.
+- **Match analysis:** Calculates the match score, shots, passing accuracy, and tackles won from the event dataset.
+- **Attacking-sequence detection:** Uses explicit rules to identify selected completed-pass sequences ending in a shot or goal.
+- **Audience-specific insights:** Supports fan-friendly and analyst-focused narratives.
+- **Optional local AI storytelling:** Uses the local `gemma4:e2b-it-q4_K_M` model through Ollama and Microsoft Agent Framework to create additional commentary.
+- **Deterministic fallback:** AI is opt-in. When local AI is not enabled or usable, PitchIQ retains its deterministic narratives.
+- **Evidence verification:** Checks event references, attacking-sequence consistency, team and minute metadata, audience mode, and narrative consistency before insights are trusted by the workflow.
+- **Interactive dashboard:** Displays match statistics, team comparisons, an attacking-sequence timeline, match replay, supporting events, agent handoffs, verification results, and a searchable event explorer.
+- **Automated tests:** Covers analysis, agent orchestration, verification failure cases, and local-storytelling validation.
 
 ## Technology
 
-- Python 3.13
+- Python 3.13 recommended
 - Streamlit
-- Pandas
-- Altair
+- Pandas and Altair
+- Microsoft Agent Framework with its Ollama connector
+- Ollama with Gemma 4 (`gemma4:e2b-it-q4_K_M`)
 - Python `unittest`
 
-The application runs locally and does not require a paid AI API.
-
-## Project Structure
+## Project structure
 
 ```text
 PitchIQ/
+├── .streamlit/
+│   └── config.toml
 ├── data/
-│   └── events.json          # Synthetic match dataset
+│   └── events.json                 # Synthetic match event dataset
 ├── pitchiq/
 │   ├── __init__.py
-│   ├── agents.py            # Agent orchestration and verification
-│   ├── dashboard.py         # Streamlit web dashboard
-│   ├── insights.py          # Audience-specific insight generation
-│   └── main.py              # Validation, analysis, and CLI
+│   ├── agents.py                   # Agent orchestration and evidence verification
+│   ├── dashboard.py                # Streamlit dashboard
+│   ├── insights.py                 # Deterministic audience-specific insights
+│   ├── local_storytelling.py       # Optional local Gemma commentary and validation
+│   └── main.py                     # Data loading, analysis, and CLI
 ├── tests/
 │   ├── __init__.py
-│   ├── test_agents.py       # Agent and verifier tests
-│   └── test_analysis.py     # Match-analysis tests
+│   ├── test_agents.py
+│   ├── test_analysis.py
+│   └── test_local_storytelling.py
 ├── requirements.txt
 ├── README.md
 └── .gitignore
@@ -50,59 +53,88 @@ PitchIQ/
 
 ## Requirements
 
-- Windows with PowerShell, or another environment that supports Python.
-- Python 3.13 recommended.
-- Internet access for initial package installation.
+- Windows and PowerShell (commands below use PowerShell)
+- Python 3.13 recommended
+- Internet access to install Python packages and download the model
+- Ollama for local AI storytelling; the dashboard can run without enabling AI
+- Enough disk space and RAM to run the selected local model. Inference performance depends on the machine.
 
-## Installation
+## Install the project
 
-Open a terminal in the project root.
+Run these commands from the project root, `C:\Users\USER\Downloads\PitchIQ` in the example below.
 
-Create a virtual environment:
+Create and activate a virtual environment:
 
 ```powershell
 py -3.13 -m venv .venv
-```
-
-Activate it in PowerShell:
-
-```powershell
 .\.venv\Scripts\Activate.ps1
 ```
 
-Install the dependencies:
+Install Python dependencies. The Ollama connector is pinned to a prerelease version, so include `--pre`:
 
 ```powershell
-python -m pip install --upgrade pip
-python -m pip install -r requirements.txt
+python -m pip install --pre -r requirements.txt
 ```
 
-## Run the Dashboard
+## Run without local AI
 
-From the project root, with the virtual environment activated:
+With the virtual environment active and your current directory at the project root, run:
 
 ```powershell
-python -m streamlit run pitchiq/dashboard.py
+python -m streamlit run .\pitchiq\dashboard.py
 ```
 
-Streamlit will display a local URL in the terminal, normally:
+Open the local URL Streamlit prints, normally `http://localhost:8501`.
 
-```text
-http://localhost:8501
+Local AI is opt-in. If `PITCHIQ_USE_LOCAL_AI` is not set to `1`, PitchIQ uses its deterministic narrative path by default.
+
+## Enable local Gemma 4 storytelling
+
+### 1. Install and verify Ollama
+
+Install Ollama for your operating system from the official website: <https://ollama.com/download>.
+
+Make sure Ollama is running. In PowerShell, check that the CLI is available:
+
+```powershell
+ollama --version
 ```
 
-Open that address in your browser.
+### 2. Download the configured model
 
-The dashboard includes:
+```powershell
+ollama pull gemma4:e2b-it-q4_K_M
+ollama list
+```
 
-- Match overview and team statistics.
-- Visual comparisons and an attacking-sequence timeline.
-- Fan and analyst insights.
-- Supporting event records and evidence IDs.
-- Agent execution and verification results.
-- A searchable and filterable event explorer.
+The model should appear in the output of `ollama list` when the pull completes.
 
-## Run the Command-Line Application
+### 3. Enable local AI and launch the dashboard
+
+In the **same PowerShell window** where you launch Streamlit, activate `.venv`, move to the project root, set the environment variable, and start the app:
+
+```powershell
+Set-Location "C:\Users\USER\Downloads\PitchIQ"
+.\.venv\Scripts\Activate.ps1
+$env:PITCHIQ_USE_LOCAL_AI = "1"
+python -m streamlit run .\pitchiq\dashboard.py
+```
+
+The environment variable applies to that PowerShell session. If you open a new terminal, set it again before launching the app. To return to deterministic mode in the current session, run:
+
+```powershell
+Remove-Item Env:PITCHIQ_USE_LOCAL_AI -ErrorAction SilentlyContinue
+```
+
+### Local AI behavior and safeguards
+
+- The match-analysis engine remains deterministic; Gemma is used for optional storytelling, not to calculate the score or match statistics.
+- The existing evidence-backed narrative fields and event IDs remain available separately from generated commentary.
+- Generated commentary is subjected to the local storytelling validation rules; the code includes checks intended to reject unsupported numeric claims.
+- If local AI is disabled or commentary cannot be used, the deterministic narrative path remains the fallback.
+- Model output is not guaranteed to be factually correct merely because the model runs locally. Review AI commentary, and rely on the recorded events and verification results for the demonstrator's structured facts.
+
+## Run the command-line application
 
 Fan-friendly insights:
 
@@ -116,45 +148,44 @@ Analyst-focused insights:
 python -m pitchiq.main --audience analyst
 ```
 
-## Run the Tests
+## Run the tests
 
-Execute the complete automated test suite:
+From the project root, with `.venv` activated:
 
 ```powershell
 python -m unittest discover -s tests -v
 ```
 
-The current development baseline is **17 passing tests**. Run the suite after code changes to confirm the application still behaves as expected.
+The current verified development baseline is **20 passing tests**. Run the suite after code changes.
 
-## How the Agent Workflow Works
+## Agent workflow
 
 ### 1. Event Analysis Agent
 
-Runs the existing deterministic match-analysis engine and identifies attacking sequences that match the configured rules.
+Runs the deterministic match-analysis engine and identifies attacking sequences that match the configured rules.
 
 ### 2. Storytelling Agent
 
-Converts detected sequences into fan-friendly or analyst-focused narratives with supporting event IDs and stated limitations.
+Produces fan-friendly or analyst-focused content. By default it uses the deterministic narrative generator. When `PITCHIQ_USE_LOCAL_AI=1`, the optional local Gemma storytelling path can add commentary, subject to the configured validation and fallback behavior.
 
 ### 3. Evidence Verification Agent
 
-Checks that insights reference the detected sequences and that event records, metadata, and expected narrative content are consistent.
+Checks evidence IDs, sequence consistency, event chronology, metadata, requested audience, and deterministic narrative consistency. The demo workflow reports the check results; insights should not be relied on when verification fails.
 
-Insights should be withheld when evidence verification fails.
+## Current limitations
 
-## Current Limitations
-
-- All match events are synthetic and do not represent a verified real-world fixture.
-- The three agents are deterministic Python components, not LLM-powered agents.
+- The match events are synthetic and do not represent a verified real-world fixture.
+- The prototype does not ingest live match feeds or calibrated player tracking.
 - Attacking-sequence detection uses transparent demonstration rules, not a validated tactical model.
-- Synthetic coordinates and pressure labels are not calibrated player-tracking measurements.
-- The project does not currently calculate validated expected goals or prove tactical causation.
-- Passing verification confirms consistency with the current rules and templates; it does not establish that the synthetic dataset reflects real football.
-- The application is a prototype and is not intended for live coaching, betting, scouting, or other consequential decisions.
+- Synthetic coordinates and pressure labels are not calibrated tracking measurements.
+- The project does not calculate validated expected goals or prove tactical causation.
+- Passing verification confirms consistency with the current rules and data; it does not prove that synthetic events reflect real football.
+- Local model responses can vary and may be slow on hardware with limited memory. AI commentary is supplementary to the recorded facts, not a replacement for them.
+- This prototype is not intended for consequential coaching, betting, scouting, or other high-stakes decisions.
 
-## Development Philosophy
+## Development principles
 
-PitchIQ emphasizes local development, explainable rules, traceable evidence, explicit limitations, and automated tests. Future improvements should preserve these principles while expanding the analytical capabilities and user experience.
+PitchIQ emphasizes local execution, explainable rules, traceable evidence, explicit limitations, and automated tests. Improvements should preserve those principles while expanding the analytical capabilities and user experience.
 
 ## License
 
