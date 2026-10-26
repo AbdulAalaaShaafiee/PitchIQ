@@ -1,9 +1,5 @@
 
-"""PitchIQ local dashboard.
-
-Uses the existing deterministic analysis and multi-agent workflow.
-All match data is synthetic.
-"""
+"""PitchIQ dashboard for synthetic demos and supported event-data uploads."""
 
 import html
 import math
@@ -14,6 +10,7 @@ import streamlit as st
 
 from pitchiq.agents import PitchIQOrchestrator
 from pitchiq.main import analyze_match, load_match
+from pitchiq.importers import CSV_TEMPLATE, parse_uploaded_match
 
 
 st.set_page_config(
@@ -27,21 +24,18 @@ st.markdown(
     """
     <style>
     :root {
-        --pq-ink: #14243a;
-        --pq-muted: #60758e;
-        --pq-green: #10b981;
-        --pq-blue: #168bda;
-        --pq-amber: #f5a623;
-        --pq-border: #dce8f3;
+        --pq-ink: #edf7ff;
+        --pq-muted: #9bb7cc;
+        --pq-green: #35f0c3;
+        --pq-blue: #50cfff;
+        --pq-amber: #ffd166;
+        --pq-border: rgba(103, 198, 226, 0.24);
     }
 
     .stApp {
-        background: linear-gradient(
-            145deg,
-            #f2f9ff 0%,
-            #f7fff9 55%,
-            #ffffff 100%
-        );
+        background: radial-gradient(ellipse at 15% 0%, rgba(20, 111, 132, 0.22), transparent 36%),
+                    radial-gradient(ellipse at 90% 10%, rgba(36, 87, 150, 0.20), transparent 34%),
+                    linear-gradient(145deg, #061321 0%, #081a2a 48%, #071725 100%);
         color: var(--pq-ink);
     }
 
@@ -56,7 +50,8 @@ st.markdown(
     font-weight: 900;
     letter-spacing: -0.065em;
     line-height: 1.08;
-    color: #102a43;
+    color: #edf8ff;
+    text-shadow: 0 0 28px rgba(55, 218, 235, 0.14);
     margin-bottom: 0;
 }
 
@@ -69,12 +64,13 @@ st.markdown(
 }
 
 .demo-banner {
-    background: linear-gradient(105deg, #d9f9ec, #e5f3ff);
-    border: 1px solid #c7eadf;
+    background: linear-gradient(105deg, rgba(16, 65, 73, 0.88), rgba(12, 42, 68, 0.92));
+    border: 1px solid rgba(53, 240, 195, 0.32);
     border-radius: 16px;
     padding: 15px 19px;
     margin: 12px 0 24px;
-    color: #174d48;
+    color: #d9fff5;
+    box-shadow: 0 10px 34px rgba(0, 0, 0, 0.16), inset 0 1px rgba(255,255,255,0.03);
 }
 
 .team-card,
@@ -89,11 +85,12 @@ st.markdown(
 }
 
 .team-card {
-    background: linear-gradient(150deg, #ffffff, #e9fbf3);
+    background: linear-gradient(145deg, rgba(14, 35, 55, 0.96), rgba(13, 52, 64, 0.95));
 }
 
 .score-card {
-    background: linear-gradient(135deg, #0f9f76, #168bda);
+    background: linear-gradient(130deg, #0d786f, #12699c 58%, #263b83);
+    box-shadow: 0 12px 36px rgba(27, 199, 220, 0.14);
     color: #ffffff;
     border-color: transparent;
 }
@@ -108,7 +105,7 @@ st.markdown(
     font-size: 1.25rem;
     font-weight: 850;
     overflow-wrap: anywhere;
-    color: #14243a;
+    color: #f0f8ff;
 }
 
 .team-label,
@@ -120,7 +117,7 @@ st.markdown(
 }
 
 .team-label {
-    color: #60758e;
+    color: #9bb7cc;
 }
 
 .score-value {
@@ -136,11 +133,11 @@ st.markdown(
 }
 
 div[data-testid="stMetric"] {
-    background: #ffffff;
+    background: rgba(13, 34, 53, 0.88);
     border: 1px solid var(--pq-border);
     border-radius: 16px;
     padding: 15px 17px;
-    box-shadow: 0 5px 20px rgba(31, 77, 112, 0.05);
+    box-shadow: 0 9px 28px rgba(0, 0, 0, 0.14);
 }
 
 div[data-testid="stMetricLabel"] {
@@ -149,8 +146,8 @@ div[data-testid="stMetricLabel"] {
 }
 
 [data-testid="stTabs"] button[aria-selected="true"] {
-    background: #dcf8eb;
-    color: #087751;
+    background: rgba(53, 240, 195, 0.13);
+    color: #57f5d1;
     border-radius: 12px 12px 0 0;
     font-weight: 800;
 }
@@ -160,8 +157,10 @@ div[data-testid="stMetricLabel"] {
 }
 
 .stButton > button {
-    border: 1px solid #c9e6db;
+    border: 1px solid rgba(89, 209, 211, 0.35);
     border-radius: 12px;
+    background: rgba(15, 42, 62, 0.65);
+    color: #e9f7ff;
     min-height: 42px;
     font-weight: 750;
     transition: transform 140ms ease, box-shadow 140ms ease;
@@ -170,12 +169,12 @@ div[data-testid="stMetricLabel"] {
 .stButton > button:hover {
     transform: translateY(-2px);
     box-shadow: 0 7px 16px rgba(22, 139, 218, 0.12);
-    border-color: #10b981;
-    color: #087751;
+    border-color: #35f0c3;
+    color: #69ffe0;
 }
 
 [data-testid="stExpander"] {
-    background: #ffffff;
+    background: rgba(13, 34, 53, 0.82);
     border: 1px solid var(--pq-border);
     border-radius: 14px;
 }
@@ -190,6 +189,10 @@ div[data-testid="stMetricLabel"] {
     color: var(--pq-muted);
     font-size: 0.9rem;
 }
+
+.hero-chips { display: flex; flex-wrap: wrap; gap: 8px; margin: 0.15rem 0 1.35rem; }
+.hero-chips span { border: 1px solid rgba(75, 218, 220, 0.26); background: rgba(13, 44, 63, 0.72); color: #9cefe3; border-radius: 999px; padding: 6px 11px; font-size: 0.68rem; font-weight: 800; letter-spacing: 0.08em; }
+[data-testid="stSidebar"] { background: linear-gradient(180deg, #071624, #0a2031); border-right: 1px solid rgba(103, 198, 226, 0.12); }
 
 @media (max-width: 800px) {
     .block-container {
@@ -214,7 +217,7 @@ div[data-testid="stMetricLabel"] {
 # Sidebar controls
 with st.sidebar:
     st.markdown("## ⚽ PitchIQ")
-    st.caption("SYNTHETIC MATCH INTELLIGENCE")
+    st.caption("FOOTBALL MATCH INTELLIGENCE")
 
     st.divider()
 
@@ -231,16 +234,44 @@ with st.sidebar:
 
     st.divider()
 
-    st.markdown("**Demo information**")
-    st.info(
-        "This demo uses a locally stored synthetic football match. "
-        "It does not require a paid AI API."
+    st.markdown("**Match data**")
+    uploaded_file = st.file_uploader(
+        "Upload event log (.csv or .json)",
+        type=["csv", "json"],
+        help=(
+            "Upload event-by-event data. The CSV template shows the supported "
+            "columns. Missing coordinates or possession details are not invented."
+        ),
+    )
+    st.download_button(
+        "Download CSV template",
+        data=CSV_TEMPLATE,
+        file_name="pitchiq_event_template.csv",
+        mime="text/csv",
+        width="stretch",
+    )
+    if uploaded_file is None:
+        st.info("No file selected: PitchIQ is using its bundled synthetic demo match.")
+    else:
+        st.info(f"Selected upload: {uploaded_file.name}. Analysis will use the supplied event records.")
+
+    st.divider()
+    st.markdown("**Local AI storytelling**")
+    st.caption(
+        "Optional Gemma 4 commentary. Enable it with "
+        "PITCHIQ_USE_LOCAL_AI=1 in the PowerShell session used to launch PitchIQ."
     )
 
 
-# Load the existing dataset and run the original workflow.
+# Load the bundled demo or a validated user-uploaded event log.
+source_is_synthetic = uploaded_file is None
+import_meta = {}
 try:
-    match = load_match()
+    if source_is_synthetic:
+        match = load_match()
+    else:
+        match = parse_uploaded_match(uploaded_file.name, uploaded_file.getvalue())
+        import_meta = match.get("_pitchiq_import", {})
 
     orchestrator = PitchIQOrchestrator(analyze_match)
     result = orchestrator.run(match, audience)
@@ -302,8 +333,8 @@ def evidence_table(event_ids):
             "Outcome": event["outcome"],
             "Pressure": event.get("pressure"),
             "Possession": event.get("possession_id"),
-            "X (synthetic)": location.get("x"),
-            "Y (synthetic)": location.get("y"),
+            "X coordinate": location.get("x"),
+            "Y coordinate": location.get("y"),
         })
 
     return pd.DataFrame(rows)
@@ -316,21 +347,37 @@ st.markdown(
 )
 st.markdown(
     '<div class="pitchiq-subtitle">'
-    'MULTI-AGENT MATCH INTELLIGENCE'
+    'LOCAL-FIRST · MULTI-AGENT MATCH INTELLIGENCE'
+    '</div>',
+    unsafe_allow_html=True,
+)
+st.markdown(
+    '<div class="hero-chips">'
+    '<span>3 SPECIALIST AGENTS</span>'
+    '<span>EVIDENCE-FIRST INSIGHTS</span>'
+    '<span>LOCAL GEMMA 4</span>'
+    '<span>INTERACTIVE MATCH REPLAY</span>'
     '</div>',
     unsafe_allow_html=True,
 )
 
-st.markdown(
-    """
-    <div class="demo-banner">
-        <strong>DEMO MODE — SYNTHETIC DATA</strong><br>
-        Match events, coordinates and pressure labels are fabricated
-        for demonstration purposes, not collected from a real match.
-    </div>
-    """,
-    unsafe_allow_html=True,
-)
+if source_is_synthetic:
+    banner_markup = (
+        '<div class="demo-banner"><strong>DEMO MODE — SYNTHETIC DATA</strong><br>'
+        'The bundled match is fabricated for demonstration. Its coordinates and pressure labels '
+        'are not real tracking measurements.</div>'
+    )
+else:
+    safe_filename = html.escape(import_meta.get("filename", uploaded_file.name))
+    banner_markup = (
+        '<div class="demo-banner"><strong>IMPORTED EVENT DATA</strong><br>'
+        f'Using {safe_filename} · {import_meta.get("event_count", len(match["events"]))} event records. '
+        'Only facts present in the uploaded file are analyzed; unavailable context is not invented.</div>'
+    )
+st.markdown(banner_markup, unsafe_allow_html=True)
+if not source_is_synthetic:
+    for warning in import_meta.get("warnings", []):
+        st.warning(warning)
 
 
 # Scoreboard
@@ -414,7 +461,7 @@ replay_tab, overview_tab, insights_tab, workflow_tab, events_tab = st.tabs([
 with replay_tab:
     st.subheader("Interactive match replay")
     st.caption(
-        "Explore the synthetic match event by event. "
+        "Explore the selected match event by event. "
         "Score, statistics, pitch markers and insights update with the replay."
     )
 
@@ -564,8 +611,14 @@ with replay_tab:
     # Draw a pitch using the synthetic event coordinates.
     st.markdown("### Event pitch")
     st.caption(
-        "The pitch positions are synthetic demonstration coordinates, "
-        "not real player-tracking measurements."
+        "The pitch positions use synthetic demonstration coordinates, not real player tracking."
+        if source_is_synthetic else
+        (
+            f"Markers use supplied coordinates for {import_meta.get('coordinate_events', 0)} of "
+            f"{import_meta.get('event_count', len(match['events']))} events; positions are only as reliable as the source."
+            if import_meta.get("coordinate_events", 0) else
+            "No coordinates were supplied, so the pitch is shown for orientation without event markers."
+        )
     )
 
     pitch_col, detail_col = st.columns([1.4, 1])
@@ -727,10 +780,11 @@ with replay_tab:
             st.write(f"**Team:** {current['team']}")
             st.write(f"**Event:** {current['type']}")
             st.write(f"**Outcome:** {current['outcome']}")
-            st.write(f"**Pressure label:** {current['pressure']}")
-            st.write(f"**Possession:** {current['possession_id']}")
+            st.write(f"**Pressure label:** {current.get('pressure') or 'Not supplied'}")
+            st.write(f"**Possession:** {current.get('possession_id') or 'Not supplied'}")
             st.caption(
-                "Pressure and possession data are synthetic."
+                "These fields are synthetic demo labels." if source_is_synthetic else
+                "These context fields are shown only when supplied by the uploaded source."
             )
         else:
             st.write("Move to the first event to inspect its details.")
@@ -1194,9 +1248,9 @@ with workflow_tab:
             "color": "#168BDA",
             "role": "MATCH INTELLIGENCE",
             "description": (
-                "Processes the synthetic event log, calculates team "
-                "statistics, and detects attacking sequences using "
-                "explicit rules."
+                "Processes the selected event log, calculates team "
+                "statistics, and detects qualifying attacking sequences using "
+                "explicit rules and available possession evidence."
             ),
             "output": "Match analysis report",
         },
@@ -1454,8 +1508,8 @@ with events_tab:
             "Possession": event.get("possession_id"),
             "Phase": event.get("phase"),
             "Pressure": event.get("pressure"),
-            "X (synthetic)": location.get("x"),
-            "Y (synthetic)": location.get("y"),
+            "X coordinate": location.get("x"),
+            "Y coordinate": location.get("y"),
         })
 
     all_events_df = pd.DataFrame(all_event_rows)
@@ -1523,6 +1577,6 @@ with events_tab:
 st.divider()
 
 st.caption(
-    "PitchIQ · Local demonstration · Synthetic match data · "
-    "No validated shot-quality model or tracking-based tactical claims."
+    "PitchIQ · " + ("Synthetic demonstration data" if source_is_synthetic else "Imported event data") + " · "
+    "No validated xG/shot-probability model or video/live-feed analysis."
 )

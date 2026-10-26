@@ -95,11 +95,10 @@ def generate_insights(match, report, audience="fan"):
 
             why_it_matters = (
                 "The event order supports a build-up-to-shot description. "
-                "The dataset contains synthetic locations and pressure labels, "
-                "but these are not calibrated tracking measurements. Without "
-                "a validated shot-quality model, this evidence does not prove "
-                "that the passes broke a defensive line or created a "
-                "high-quality chance."
+                "The reliability of location and pressure context depends on "
+                "the supplied source data. Without a validated shot-quality "
+                "model, this evidence does not prove that the passes broke a "
+                "defensive line or created a high-quality chance."
             )
 
 
@@ -116,9 +115,9 @@ def generate_insights(match, report, audience="fan"):
             "evidence_event_ids": list(evidence_ids),
 
             "limitation": (
-                "All event coordinates and pressure labels are synthetic estimates, "
-                "not tracking measurements. The current rules do not calculate "
-                "validated shot quality or prove tactical causation."
+                "PitchIQ does not independently validate tracking coordinates or "
+                "pressure labels. The current rules do not calculate validated "
+                "shot quality or prove tactical causation."
             ),
 
         })

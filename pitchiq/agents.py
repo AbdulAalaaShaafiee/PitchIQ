@@ -150,20 +150,19 @@ def _expected_narrative(sequence, finish_event, audience):
 
         why_it_matters = (
             "The event order supports a build-up-to-shot description. "
-            "The dataset contains synthetic locations and pressure labels, "
-            "but these are not calibrated tracking measurements. Without "
-            "a validated shot-quality model, this evidence does not prove "
-            "that the passes broke a defensive line or created a "
-            "high-quality chance."
+            "The reliability of location and pressure context depends on "
+            "the supplied source data. Without a validated shot-quality "
+            "model, this evidence does not prove that the passes broke a "
+            "defensive line or created a high-quality chance."
         )
 
     else:
         return None
 
     limitation = (
-        "All event coordinates and pressure labels are synthetic estimates, "
-        "not tracking measurements. The current rules do not calculate "
-        "validated shot quality or prove tactical causation."
+        "PitchIQ does not independently validate tracking coordinates or "
+        "pressure labels. The current rules do not calculate validated "
+        "shot quality or prove tactical causation."
     )
 
     return {
@@ -471,7 +470,9 @@ class PitchIQOrchestrator:
             "agent": self.analysis_agent.name,
             "status": "completed",
             "detail": (
-                f"{len(match['events'])} synthetic events analyzed; "
+                f"{len(match['events'])} "
+                f"{'imported' if match.get('_pitchiq_import') else 'synthetic'} "
+                "events analyzed; "
                 f"{len(report['attacking_sequences'])} "
                 "attacking sequences detected."
             ),

@@ -348,6 +348,12 @@ def find_attacking_sequences(events):
             continue
 
         sequence_events = passes + [event]
+        possession_ids = [item.get("possession_id") for item in sequence_events]
+        if not possession_ids[0] or any(
+            possession_id != possession_ids[0] for possession_id in possession_ids
+        ):
+            # Do not claim a verified possession sequence when the source lacks this evidence.
+            continue
 
         sequences.append({
             "team": team,

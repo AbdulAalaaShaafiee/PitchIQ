@@ -1,14 +1,15 @@
 # PitchIQ | Local-First Football Match Intelligence
 
-PitchIQ is a local-first football match-intelligence prototype. It analyzes a **synthetic demonstration match**, identifies selected attacking sequences, and presents evidence-linked insights through an interactive Streamlit dashboard.
+PitchIQ is a local-first football match-intelligence prototype. It includes a synthetic demo match and can import supported CSV/JSON event logs to calculate evidence-linked match statistics and selected attacking sequences through an interactive Streamlit dashboard.
 
 PitchIQ combines deterministic match analysis and evidence verification with **optional local AI storytelling** using Gemma 4 through Ollama and Microsoft Agent Framework. It does not require a paid AI API for local inference.
 
-> **Prototype notice:** The current match dataset is synthetic. It is not a verified real-world fixture, and the project does not use live match feeds or calibrated player-tracking data.
+> **Prototype notice:** The bundled demo dataset is synthetic. Uploaded event files are analyzed only from the fields they actually contain; PitchIQ does not currently analyze match video, ingest live feeds, calculate validated xG/goal probabilities, or guarantee calibrated player tracking.
 
 ## Features
 
-- **Match analysis:** Calculates the match score, shots, passing accuracy, and tackles won from the event dataset.
+- **Match analysis:** Calculates the score, shots, passing accuracy, and tackles won from structured event records.
+- **CSV/JSON import:** Upload an event-level match file, review source-data warnings, and analyze the imported match without replacing the bundled demo.
 - **Attacking-sequence detection:** Uses explicit rules to identify selected completed-pass sequences ending in a shot or goal.
 - **Audience-specific insights:** Supports fan-friendly and analyst-focused narratives.
 - **Optional local AI storytelling:** Uses the local `gemma4:e2b-it-q4_K_M` model through Ollama and Microsoft Agent Framework to create additional commentary.
@@ -39,13 +40,15 @@ PitchIQ/
 │   ├── agents.py                   # Agent orchestration and evidence verification
 │   ├── dashboard.py                # Streamlit dashboard
 │   ├── insights.py                 # Deterministic audience-specific insights
+│   ├── importers.py                 # CSV/JSON event import and normalization
 │   ├── local_storytelling.py       # Optional local Gemma commentary and validation
 │   └── main.py                     # Data loading, analysis, and CLI
 ├── tests/
 │   ├── __init__.py
 │   ├── test_agents.py
 │   ├── test_analysis.py
-│   └── test_local_storytelling.py
+│   ├── test_local_storytelling.py
+│   └── test_importers.py             # CSV/JSON import and validation tests
 ├── requirements.txt
 ├── README.md
 └── .gitignore
@@ -85,6 +88,14 @@ python -m streamlit run .\pitchiq\dashboard.py
 ```
 
 Open the local URL Streamlit prints, normally `http://localhost:8501`.
+
+### Import event-level match data
+
+Use the sidebar's **Upload event log** control to select a `.csv` or `.json` file. A downloadable CSV template is provided in the app. JSON files should contain `match_id`, `home_team`, `away_team`, and an `events` array. CSV files need `minute`, `team`, `type`, and `outcome`; `player`, `id`, `period`, `possession_id`, `phase`, `pressure`, `x`, `y`, `end_x`, `end_y`, `home_team`, `away_team`, and `match_id` are supported optional columns. Common event/column aliases are normalized where unambiguous.
+
+Event types and outcomes must map to PitchIQ's supported vocabulary (`pass`, `shot`, `goal`, `tackle`, `carry`, `interception`, `recovery`, `clearance`, `foul`, `pressure`, `duel` and their supported outcomes). Pitch coordinates, when supplied, must use a 105 × 68 scale. Missing values are left unspecified: without consistent possession IDs, PitchIQ withholds possession-based attacking-sequence claims; without coordinates, it does not plot event markers. If home/away labels are absent, the app infers orientation from first appearance and warns you to verify it.
+
+This import path handles structured **event logs**, not match videos or arbitrary screenshot/stat-summary files. Its outputs depend on the source's completeness and vocabulary; it does not infer missing tracking data or calculate xG/goal probabilities.
 
 Local AI is opt-in. If `PITCHIQ_USE_LOCAL_AI` is not set to `1`, PitchIQ uses its deterministic narrative path by default.
 
@@ -156,7 +167,7 @@ From the project root, with `.venv` activated:
 python -m unittest discover -s tests -v
 ```
 
-The current verified development baseline is **20 passing tests**. Run the suite after code changes.
+The current verified development baseline is **25 passing tests**. Run the suite after code changes.
 
 ## Agent workflow
 
@@ -178,7 +189,7 @@ Checks evidence IDs, sequence consistency, event chronology, metadata, requested
 - The prototype does not ingest live match feeds or calibrated player tracking.
 - Attacking-sequence detection uses transparent demonstration rules, not a validated tactical model.
 - Synthetic coordinates and pressure labels are not calibrated tracking measurements.
-- The project does not calculate validated expected goals or prove tactical causation.
+- The project does not calculate validated expected goals/goal probabilities, analyze raw match video, or prove tactical causation.
 - Passing verification confirms consistency with the current rules and data; it does not prove that synthetic events reflect real football.
 - Local model responses can vary and may be slow on hardware with limited memory. AI commentary is supplementary to the recorded facts, not a replacement for them.
 - This prototype is not intended for consequential coaching, betting, scouting, or other high-stakes decisions.
