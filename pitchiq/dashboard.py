@@ -3,6 +3,7 @@
 
 import html
 import math
+import os
 
 import altair as alt
 import pandas as pd
@@ -218,6 +219,8 @@ div[data-testid="stMetricLabel"] {
 with st.sidebar:
     st.markdown("## ⚽ PitchIQ")
     st.caption("FOOTBALL MATCH INTELLIGENCE")
+    st.link_button("↗ Advanced Mode", "http://127.0.0.1:8765/", width="stretch")
+    st.caption("Switch to the full Figma-inspired workspace.")
 
     st.divider()
 
@@ -257,10 +260,20 @@ with st.sidebar:
 
     st.divider()
     st.markdown("**Local AI storytelling**")
-    st.caption(
-        "Optional Gemma 4 commentary. Enable it with "
-        "PITCHIQ_USE_LOCAL_AI=1 in the PowerShell session used to launch PitchIQ."
+    gemma_default = os.getenv("PITCHIQ_USE_LOCAL_AI", "0").strip().lower() in {"1", "true", "yes", "on"}
+    gemma_enabled = st.toggle(
+        "Enable Gemma 4 storytelling",
+        value=gemma_default,
+        key="pitchiq_gemma_storytelling_enabled",
+        help="Uses your local Gemma 4 model through Ollama to paraphrase verified insights. Ollama must be running and the configured model must be available.",
     )
+    if gemma_enabled:
+        os.environ["PITCHIQ_USE_LOCAL_AI"] = "1"
+        st.success("Local Gemma 4 storytelling is enabled.")
+    else:
+        os.environ.pop("PITCHIQ_USE_LOCAL_AI", None)
+        st.caption("Deterministic storytelling is active. Turn on Gemma 4 to add optional local AI commentary.")
+    st.caption("Match statistics and evidence verification remain deterministic; Gemma only adds supplementary wording.")
 
 
 # Load the bundled demo or a validated user-uploaded event log.

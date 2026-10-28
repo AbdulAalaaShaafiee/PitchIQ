@@ -54,9 +54,38 @@ def _numbers(text: str) -> set[str]:
     return set(re.findall(r"\b\d+(?:\.\d+)?%?\b", text))
 
 
+def _reverses_saved_shot_actor(candidate: str, source_summary: str) -> bool:
+    """Reject a paraphrase that changes the recorded shooter into the saver.
+
+    PitchIQ's source summaries phrase this fact as "PLAYER had a shot saved".
+    Rewording that as "a shot saved by PLAYER" reverses the player's role.
+    The deterministic summary remains authoritative if this check rejects it.
+    """
+    source_match = re.search(
+        r"\bbefore\s+(.+?)\s+had a shot saved\b",
+        source_summary,
+        flags=re.IGNORECASE,
+    )
+    if not source_match:
+        return False
+
+    shooter = source_match.group(1).strip()
+    if not shooter:
+        return False
+
+    reversed_role = re.search(
+        rf"\bshot\s+(?:was\s+)?saved\s+by\s+{re.escape(shooter)}\b",
+        candidate,
+        flags=re.IGNORECASE,
+    )
+    return reversed_role is not None
+
+
 def _clean_and_validate(candidate: str, source_summary: str) -> str:
     candidate = " ".join(candidate.strip().strip('"').split())
     if not candidate or len(candidate) > 400 or len(candidate.split()) > 55:
+        return ""
+    if _reverses_saved_shot_actor(candidate, source_summary):
         return ""
     # Reject a paraphrase if it introduces any new numeric value.
     if not _numbers(candidate).issubset(_numbers(source_summary)):

@@ -67,41 +67,60 @@ def generate_insights(match, report, audience="fan"):
 
         finish_label, finish_phrase = describe_finish(finish_event)
 
+        same_possession_evidence = sequence.get("evidence_basis") == "same_possession"
         title = (
-            f"{team}'s {passes}-pass attack ends with {finish_label}"
+            f"{team}'s {passes}-pass possession ends with {finish_label}"
+            if same_possession_evidence
+            else f"{team}'s {passes}-pass attack ends with {finish_label}"
         )
 
-
         if audience == "fan":
-            summary = (
-                f"At minute {end_minute}, {team} connected "
-                f"{passes} completed passes before {finish_phrase}."
-            )
-
-            why_it_matters = (
-                "This highlights how a short passing sequence led "
-                "to a shot, giving fans a concrete attacking moment "
-                "to follow beyond the scoreline."
-            )
-
+            if same_possession_evidence:
+                summary = (
+                    f"At minute {end_minute}, {team} recorded {passes} completed "
+                    f"passes in the same possession before {finish_phrase}."
+                )
+                why_it_matters = (
+                    "This highlights recorded passing activity before a shot within "
+                    "one possession. It does not establish that all intervening actions "
+                    "were passes or that the passes created a high-quality chance."
+                )
+            else:
+                summary = (
+                    f"At minute {end_minute}, {team} connected "
+                    f"{passes} completed passes before {finish_phrase}."
+                )
+                why_it_matters = (
+                    "This highlights how a short passing sequence led "
+                    "to a shot, giving fans a concrete attacking moment "
+                    "to follow beyond the scoreline."
+                )
         else:
-            summary = (
-                f"{team} completed {passes} consecutive passes from "
-                f"minute {start_minute} to {end_minute}; the sequence "
-                f"culminated when {finish_phrase} "
-                f"(recorded outcome: {finish_event['outcome']})."
-            )
-
-
-            why_it_matters = (
-                "The event order supports a build-up-to-shot description. "
-                "The reliability of location and pressure context depends on "
-                "the supplied source data. Without a validated shot-quality "
-                "model, this evidence does not prove that the passes broke a "
-                "defensive line or created a high-quality chance."
-            )
-
-
+            if same_possession_evidence:
+                summary = (
+                    f"{team} recorded {passes} completed passes in the same "
+                    f"possession from minute {start_minute} to {end_minute}, "
+                    f"before {finish_phrase} (recorded outcome: {finish_event['outcome']})."
+                )
+                why_it_matters = (
+                    "The source records these completed passes and the finish in one "
+                    "possession. It does not establish that the passes were consecutive "
+                    "actions, that they broke a defensive line, or that the shot was high quality."
+                )
+            else:
+                summary = (
+                    f"{team} completed {passes} consecutive passes from "
+                    f"minute {start_minute} to {end_minute}; the sequence "
+                    f"culminated when {finish_phrase} "
+                    f"(recorded outcome: {finish_event['outcome']})."
+                )
+                why_it_matters = (
+                    "The event order supports a build-up-to-shot description. "
+                    "The reliability of location and pressure context depends on "
+                    "the supplied source data. Without a validated shot-quality "
+                    "model, this evidence does not prove that the passes broke a "
+                    "defensive line or created a high-quality chance."
+                )
 
         insights.append({
             "id": f"attack-{number:03d}",

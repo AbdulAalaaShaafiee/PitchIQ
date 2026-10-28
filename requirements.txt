@@ -1,5 +1,5 @@
-
 streamlit==1.66.0
 pandas>=2.2
 altair>=5.5
 agent-framework-ollama==1.0.0b261022
+tornado>=6.4,<7

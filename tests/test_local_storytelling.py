@@ -6,6 +6,28 @@ from pitchiq.local_storytelling import _clean_and_validate, add_local_ai_comment
 
 
 class TestLocalStorytelling(unittest.TestCase):
+    def test_rejects_paraphrase_that_turns_shooter_into_saver(self):
+        source = (
+            "At minute 37, Bayer Leverkusen completed 2 passes before "
+            "Hakan Çalhanoğlu had a shot saved (recorded outcome: saved)."
+        )
+        candidate = (
+            "At minute 37, Bayer Leverkusen completed two passes, "
+            "followed by a shot saved by Hakan Çalhanoğlu."
+        )
+        self.assertEqual("", _clean_and_validate(candidate, source))
+
+    def test_accepts_paraphrase_that_keeps_shooter_role(self):
+        source = (
+            "At minute 37, Bayer Leverkusen completed 2 passes before "
+            "Hakan Çalhanoğlu had a shot saved (recorded outcome: saved)."
+        )
+        candidate = (
+            "At minute 37, Hakan Çalhanoğlu's shot was saved after "
+            "2 completed passes by Bayer Leverkusen."
+        )
+        self.assertEqual(candidate, _clean_and_validate(candidate, source))
+
     def test_rejects_new_numeric_claims(self):
         self.assertEqual(
             _clean_and_validate("They completed 4 passes before the shot.", "They completed 2 passes before the shot."),
